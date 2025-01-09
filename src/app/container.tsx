@@ -16,7 +16,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 
-const LINKS = [{ text: "Home", href: "/" }];
+const LINKS = [
+  { text: "Home", href: "/" },
+  { text: "Decrypt", href: "/decrypt" },
+];
 
 function Container({ children }: { children: React.ReactNode }) {
   // console.log(router);
