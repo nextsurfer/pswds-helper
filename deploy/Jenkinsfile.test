@@ -1,0 +1,78 @@
+pipeline {
+    agent {
+        label 'hongkong-test'
+    }
+    stages {
+        stage('Pre') {
+            steps {
+                script {
+                    sh '''
+                        git remote update origin --prune
+                        git branch -a | grep -e '^  remotes/origin/dev$'
+                        echo 'remote dev branch exists'
+                        git branch -D dev || echo 'no local dev branch'
+                        git branch dev remotes/origin/dev
+                    '''
+                    sh """
+                        git checkout ${BRANCH_NAME}
+                        git rebase dev
+                        echo 'git rebase dev success'
+                        git push origin ${BRANCH_NAME}
+                        echo 'git push origin' ${BRANCH_NAME} 'success'
+                    """
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                sh """
+                    docker build \
+                        --build-arg env=test \
+                        -t nextsurfer/pswds-helper:latest \
+                        -f ./Dockerfile .
+                    docker stop pswds-helper && docker rm pswds-helper || echo 0
+                    docker run -d \
+                        --restart always \
+                        --name pswds-helper \
+                        --dns ${HOST_IP} \
+                        --dns 8.8.8.8 \
+                        -p ${PSWDS_HELPER_PORT}:3000 \
+                        nextsurfer/pswds-helper:latest
+                """
+            }
+        }
+    }
+    post {
+        success {
+            sh """
+                echo 'e2e testing success'
+                git checkout dev
+                git rebase ${BRANCH_NAME}
+                git push origin dev
+            """
+        }
+        failure {
+            sh """
+                echo 'feature build or e2e testing fail'
+                docker build \
+                    --build-arg env=test \
+                    -t nextsurfer/pswds-helper:latest \
+                    -f ./Dockerfile .
+                docker stop pswds-helper && docker rm pswds-helper || echo 0
+                docker run -d \
+                    --restart always \
+                    --name pswds-helper \
+                    --dns ${HOST_IP} \
+                    --dns 8.8.8.8 \
+                    -p ${PSWDS_HELPER_PORT}:3000 \
+                    nextsurfer/pswds-helper:latest
+            """
+        }
+        cleanup {
+            sh """
+                docker system prune -f
+            """
+            cleanWs()
+        }
+    }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "pswds-helper",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.7",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/lab": "^5.0.0-alpha.149",
+    "@mui/material": "^5.14.13",
+    "@mui/x-date-pickers": "^6.16.2",
+    "@noble/ciphers": "^0.5.3",
+    "@noble/hashes": "^1.4.0",
+    "@noble/secp256k1": "^2.1.0",
+    "@types/node": "20.4.6",
+    "@types/react": "18.2.18",
+    "@types/react-dom": "18.2.7",
+    "autoprefixer": "10.4.14",
+    "dayjs": "^1.11.10",
+    "eslint": "8.46.0",
+    "eslint-config-next": "13.4.12",
+    "lodash": "^4.17.21",
+    "mui-file-input": "^3.0.0",
+    "next": "13.4.12",
+    "postcss": "8.4.27",
+    "qrcode": "^1.5.4",
+    "react": "18.2.0",
+    "react-cookies": "^0.1.1",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.3",
+    "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.5",
+    "@types/qrcode": "^1.5.5",
+    "clipboard-polyfill": "^4.0.2",
+    "crypto-js": "^4.2.0",
+    "doom-cipher": "^1.0.9",
+    "eciesjs": "^0.4.6",
+    "moment": "^2.30.1"
+  }
+}
