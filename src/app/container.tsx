@@ -19,6 +19,11 @@ import MuiAlert, { AlertProps } from "@mui/material/Alert";
 const LINKS = [
   { text: "Home", href: "/" },
   { text: "Decrypt", href: "/decrypt" },
+  {
+    text: "TC Backup Ciphertext",
+    href: "/tcBackupCiphertext",
+  },
+  { text: "TC Decrypt", href: "/tcDecrypt" },
 ];
 
 function Container({ children }: { children: React.ReactNode }) {

@@ -91,7 +91,7 @@ export const post = async (
       }
     }
     if (respData.code !== 0) {
-      setErrorToast && setErrorToast(respData.debugMessage);
+      setErrorToast && setErrorToast(respData.message);
       return respData;
     }
     if (successAction) {
@@ -103,6 +103,31 @@ export const post = async (
     const message = (error as Error).message;
     setErrorToast && setErrorToast(message);
   }
+};
+
+export const encrypt = (secret: string, plaintext: string): string => {
+  // 加解密的密钥 keccak_256（ password +  salt），salt为 9C9B913EB1B6254F4737CE947EFD16F16E916F
+  let encryptKey = keccak_256(
+    secret + "9C9B913EB1B6254F4737CE947EFD16F16E916F"
+  );
+  let nonce = new Uint8Array(24);
+  let aead = xchacha20poly1305(encryptKey.slice(0, 32), nonce);
+  let encryptedb64 = Buffer.from(
+    aead.encrypt(new Uint8Array(Buffer.from(plaintext, "utf-8")))
+  ).toString("base64");
+  return encryptedb64;
+};
+
+export const decrypt = (secret: string, encryptedb64: string): string => {
+  let encryptKey = keccak_256(
+    secret + "9C9B913EB1B6254F4737CE947EFD16F16E916F"
+  );
+  let nonce = new Uint8Array(24);
+  let aead = xchacha20poly1305(encryptKey.slice(0, 32), nonce);
+  let plainbytes = aead.decrypt(
+    new Uint8Array(Buffer.from(encryptedb64, "base64"))
+  );
+  return Buffer.from(plainbytes).toString("utf-8");
 };
 
 // AES-256-GCM
