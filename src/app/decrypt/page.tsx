@@ -77,7 +77,7 @@ export default function Home() {
             setErrorToast("invalid plaintext");
             return;
           }
-          setInvalidPlaintext(true);
+          setValidPlaintext(true);
           setQuestion1(plaintextObj.question1);
           setQuestion2(plaintextObj.question2);
           setQuestion3(plaintextObj.question3);
@@ -91,7 +91,7 @@ export default function Home() {
     );
   };
 
-  const [invalidPlaintext, setInvalidPlaintext] = React.useState(false);
+  const [validPlaintext, setValidPlaintext] = React.useState(false);
 
   const doDecrypt = () => {
     if (
@@ -220,7 +220,7 @@ export default function Home() {
             Commit
           </Button>
         </Stack>
-        {invalidPlaintext && (
+        {validPlaintext && (
           <>
             <Stack direction="row" textAlign="center" justifyContent="left">
               <Typography variant="h6" gutterBottom>

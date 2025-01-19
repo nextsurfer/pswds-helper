@@ -20,6 +20,12 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
 
+interface Options {
+  title: string;
+  url: string;
+  usernameOrEmail: string;
+}
+
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement;
@@ -55,6 +61,7 @@ export default function Page() {
   ) => {
     event.preventDefault();
   };
+  const [options, setOptions] = React.useState<null | Options>(null);
   const generateQR = () => {
     // 1. fetch uuid from backend
     post(
@@ -100,22 +107,27 @@ export default function Page() {
                 setErrorToast(result.message);
                 return;
               }
-              if (result.data && result.data.cipherText !== "") {
-                clearInterval(timer);
-                // 4-2. decrypt the cipher text
-                const ciphertext = Buffer.from(result.data.cipherText, "hex");
-                const plaintext = Buffer.from(
-                  aes256GCM_secp256k1Decrypt(
-                    _privKey,
-                    new Uint8Array(
-                      ciphertext.buffer,
-                      ciphertext.byteOffset,
-                      ciphertext.length
+              if (result.data) {
+                if (result.data.cipherText) {
+                  clearInterval(timer);
+                  // 4-2. decrypt the cipher text
+                  const ciphertext = Buffer.from(result.data.cipherText, "hex");
+                  const plaintext = Buffer.from(
+                    aes256GCM_secp256k1Decrypt(
+                      _privKey,
+                      new Uint8Array(
+                        ciphertext.buffer,
+                        ciphertext.byteOffset,
+                        ciphertext.length
+                      )
                     )
-                  )
-                ).toString("utf-8");
-                if (plaintext) {
-                  setPlainPassword(plaintext);
+                  ).toString("utf-8");
+                  if (plaintext) {
+                    setPlainPassword(plaintext);
+                  }
+                }
+                if (result.data.options) {
+                  setOptions(JSON.parse(result.data.options));
                 }
               }
             }, 5000);
@@ -153,45 +165,104 @@ export default function Page() {
         <canvas id="canvas"></canvas>
       </Stack>
       {plainPassword && (
-        <Stack spacing={2} alignItems="center" direction="row">
-          <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-password">
-              Password
-            </InputLabel>
-            <OutlinedInput
-              value={plainPassword}
-              id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={
-                      showPassword
-                        ? "hide the password"
-                        : "display the password"
-                    }
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    onMouseUp={handleMouseUpPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Password"
-            />
-          </FormControl>
-          <Button
-            size="large"
-            variant="contained"
-            onClick={() => {
-              copyToClipboard(plainPassword);
-            }}
-          >
-            Copy
-          </Button>
-        </Stack>
+        <>
+          <Stack spacing={2} alignItems="center" direction="row">
+            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-title">Title</InputLabel>
+              <OutlinedInput
+                id="outlined-adornment-title"
+                value={options?.title}
+                label="Title"
+              />
+            </FormControl>
+            <Button
+              sx={{ visibility: "hidden" }}
+              size="large"
+              variant="contained"
+              onClick={() => {}}
+            >
+              Copy
+            </Button>
+          </Stack>
+          <Stack spacing={2} alignItems="center" direction="row">
+            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-url">URL</InputLabel>
+              <OutlinedInput
+                value={options?.url}
+                id="outlined-adornment-url"
+                label="URL"
+              />
+            </FormControl>
+            <Button
+              sx={{ visibility: "hidden" }}
+              size="large"
+              variant="contained"
+              onClick={() => {}}
+            >
+              Copy
+            </Button>
+          </Stack>
+          <Stack spacing={2} alignItems="center" direction="row">
+            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-username">
+                UsernameOrEmail
+              </InputLabel>
+              <OutlinedInput
+                value={options?.usernameOrEmail}
+                id="outlined-adornment-username"
+                label="UsernameOrEmail"
+              />
+            </FormControl>
+            <Button
+              size="large"
+              variant="contained"
+              onClick={() => {
+                copyToClipboard(options ? options.usernameOrEmail : "");
+              }}
+            >
+              Copy
+            </Button>
+          </Stack>
+          <Stack spacing={2} alignItems="center" direction="row">
+            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-password">
+                Password
+              </InputLabel>
+              <OutlinedInput
+                value={plainPassword}
+                id="outlined-adornment-password"
+                type={showPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword
+                          ? "hide the password"
+                          : "display the password"
+                      }
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      onMouseUp={handleMouseUpPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                label="Password"
+              />
+            </FormControl>
+            <Button
+              size="large"
+              variant="contained"
+              onClick={() => {
+                copyToClipboard(plainPassword);
+              }}
+            >
+              Copy
+            </Button>
+          </Stack>
+        </>
       )}
       <Snackbar
         open={errorToast !== ""}
