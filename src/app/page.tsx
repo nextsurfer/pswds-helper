@@ -19,13 +19,14 @@ import * as clipboard from "clipboard-polyfill";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 
 interface Options {
   title: string;
   website: string;
   username: string;
   notes: string;
-  others: string;
+  others: any;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -51,7 +52,7 @@ export default function Page() {
   const [uuid, setUuid] = React.useState("");
   const [privKey, setPrivKey] = React.useState<null | Uint8Array>(null);
   const [plainPassword, setPlainPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(true);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -150,7 +151,7 @@ export default function Page() {
                         }
                       }
                     }
-                    options.others = JSON.stringify(others, null, "\t");
+                    options.others = others;
                   }
                   setOptions(options);
                 }
@@ -307,26 +308,39 @@ export default function Page() {
               Copy
             </Button>
           </Stack>
-          <Stack spacing={2} alignItems="center" direction="row">
-            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
-              <InputLabel htmlFor="outlined-adornment-url">Others</InputLabel>
-              <OutlinedInput
-                value={options?.others}
-                id="outlined-adornment-url"
-                label="Others"
-                multiline
-                minRows={3}
-              />
-            </FormControl>
-            <Button
-              sx={{ visibility: "hidden" }}
-              size="large"
-              variant="contained"
-              onClick={() => {}}
-            >
-              Copy
-            </Button>
-          </Stack>
+          <Typography width="30%" variant="h6" gutterBottom>
+            Others:
+          </Typography>
+          {options?.others &&
+            options.others.map((item: any) => (
+              <Stack
+                key={item.key}
+                spacing={2}
+                alignItems="center"
+                direction="row"
+              >
+                <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+                  <InputLabel htmlFor="outlined-adornment-url">
+                    {item.key}
+                  </InputLabel>
+                  <OutlinedInput
+                    value={item.value}
+                    id="outlined-adornment-url"
+                    label={item.key}
+                  />
+                </FormControl>
+                <Button
+                  sx={item.type !== "password" ? { visibility: "hidden" } : {}}
+                  size="large"
+                  variant="contained"
+                  onClick={() => {
+                    copyToClipboard(item.value);
+                  }}
+                >
+                  Copy
+                </Button>
+              </Stack>
+            ))}
         </>
       )}
       <Snackbar
