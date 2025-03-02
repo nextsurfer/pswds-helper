@@ -19,11 +19,14 @@ import * as clipboard from "clipboard-polyfill";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 
 interface Options {
   title: string;
-  url: string;
-  usernameOrEmail: string;
+  website: string;
+  username: string;
+  notes: string;
+  others: any;
 }
 
 const Transition = React.forwardRef(function Transition(
@@ -49,7 +52,7 @@ export default function Page() {
   const [uuid, setUuid] = React.useState("");
   const [privKey, setPrivKey] = React.useState<null | Uint8Array>(null);
   const [plainPassword, setPlainPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(true);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -127,7 +130,30 @@ export default function Page() {
                   }
                 }
                 if (result.data.options) {
-                  setOptions(JSON.parse(result.data.options));
+                  let options = JSON.parse(result.data.options);
+                  if (options.others) {
+                    let others = JSON.parse(options.others);
+                    for (let i = 0; i < others.length; i++) {
+                      if (others[i].key === "password") {
+                        const ciphertext = Buffer.from(others[i].value, "hex");
+                        const plaintext = Buffer.from(
+                          aes256GCM_secp256k1Decrypt(
+                            _privKey,
+                            new Uint8Array(
+                              ciphertext.buffer,
+                              ciphertext.byteOffset,
+                              ciphertext.length
+                            )
+                          )
+                        ).toString("utf-8");
+                        if (plaintext) {
+                          others[i].value = plaintext;
+                        }
+                      }
+                    }
+                    options.others = others;
+                  }
+                  setOptions(options);
                 }
               }
             }, 5000);
@@ -186,9 +212,9 @@ export default function Page() {
           </Stack>
           <Stack spacing={2} alignItems="center" direction="row">
             <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
-              <InputLabel htmlFor="outlined-adornment-url">URL</InputLabel>
+              <InputLabel htmlFor="outlined-adornment-url">Website</InputLabel>
               <OutlinedInput
-                value={options?.url}
+                value={options?.website}
                 id="outlined-adornment-url"
                 label="URL"
               />
@@ -205,10 +231,10 @@ export default function Page() {
           <Stack spacing={2} alignItems="center" direction="row">
             <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
               <InputLabel htmlFor="outlined-adornment-username">
-                UsernameOrEmail
+                Username
               </InputLabel>
               <OutlinedInput
-                value={options?.usernameOrEmail}
+                value={options?.username}
                 id="outlined-adornment-username"
                 label="UsernameOrEmail"
               />
@@ -217,7 +243,7 @@ export default function Page() {
               size="large"
               variant="contained"
               onClick={() => {
-                copyToClipboard(options ? options.usernameOrEmail : "");
+                copyToClipboard(options ? options.username : "");
               }}
             >
               Copy
@@ -262,6 +288,59 @@ export default function Page() {
               Copy
             </Button>
           </Stack>
+          <Stack spacing={2} alignItems="center" direction="row">
+            <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-url">Notes</InputLabel>
+              <OutlinedInput
+                value={options?.notes}
+                id="outlined-adornment-url"
+                label="Notes"
+                multiline
+                minRows={3}
+              />
+            </FormControl>
+            <Button
+              sx={{ visibility: "hidden" }}
+              size="large"
+              variant="contained"
+              onClick={() => {}}
+            >
+              Copy
+            </Button>
+          </Stack>
+          <Typography width="30%" variant="h6" gutterBottom>
+            Others:
+          </Typography>
+          {options?.others &&
+            options.others.map((item: any) => (
+              <Stack
+                key={item.key}
+                spacing={2}
+                alignItems="center"
+                direction="row"
+              >
+                <FormControl sx={{ m: 1, width: 500 }} variant="outlined">
+                  <InputLabel htmlFor="outlined-adornment-url">
+                    {item.key}
+                  </InputLabel>
+                  <OutlinedInput
+                    value={item.value}
+                    id="outlined-adornment-url"
+                    label={item.key}
+                  />
+                </FormControl>
+                <Button
+                  sx={item.type !== "password" ? { visibility: "hidden" } : {}}
+                  size="large"
+                  variant="contained"
+                  onClick={() => {
+                    copyToClipboard(item.value);
+                  }}
+                >
+                  Copy
+                </Button>
+              </Stack>
+            ))}
         </>
       )}
       <Snackbar
