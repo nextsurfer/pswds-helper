@@ -119,7 +119,7 @@ export default function Page() {
     post(
       false,
       "",
-      "/pswds/getUUID/v1",
+      "/pswds/getAirdropID/v1",
       setLoading,
       true,
       undefined,
@@ -149,7 +149,7 @@ export default function Page() {
               const result = await post(
                 false,
                 "",
-                "/pswds/requestRecord/v1",
+                "/pswds/requestAirdropData/v1",
                 setLoading,
                 true,
                 { uuid: respData.data.uuid }
