@@ -110,8 +110,15 @@ export const encrypt = (secret: string, plaintext: string): string => {
   let encryptKey = keccak_256(
     secret + "9C9B913EB1B6254F4737CE947EFD16F16E916F"
   );
+  return encryptByXchacha20poly1305(encryptKey, plaintext);
+};
+
+export const encryptByXchacha20poly1305 = (
+  key: Uint8Array,
+  plaintext: string
+): string => {
   let nonce = new Uint8Array(24);
-  let aead = xchacha20poly1305(encryptKey.slice(0, 32), nonce);
+  let aead = xchacha20poly1305(key.slice(0, 32), nonce);
   let encryptedb64 = Buffer.from(
     aead.encrypt(new Uint8Array(Buffer.from(plaintext, "utf-8")))
   ).toString("base64");
@@ -122,8 +129,15 @@ export const decrypt = (secret: string, encryptedb64: string): string => {
   let encryptKey = keccak_256(
     secret + "9C9B913EB1B6254F4737CE947EFD16F16E916F"
   );
+  return decryptByXchacha20poly1305(encryptKey, encryptedb64);
+};
+
+export const decryptByXchacha20poly1305 = (
+  key: Uint8Array,
+  encryptedb64: string
+): string => {
   let nonce = new Uint8Array(24);
-  let aead = xchacha20poly1305(encryptKey.slice(0, 32), nonce);
+  let aead = xchacha20poly1305(key.slice(0, 32), nonce);
   let plainbytes = aead.decrypt(
     new Uint8Array(Buffer.from(encryptedb64, "base64"))
   );
