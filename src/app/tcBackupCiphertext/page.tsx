@@ -14,7 +14,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
 ) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
 });
 
 export default function Home() {
@@ -51,48 +51,48 @@ export default function Home() {
 
   return (
     <main>
-      <Stack marginX="200px" marginTop="50px" spacing={2}>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+      <Stack marginX='200px' marginTop='50px' spacing={2}>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 1: Enter Account Email
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
+        <Stack direction='row' textAlign='center' justifyContent='left'>
           <TextField
-            id="outlined-basic"
-            label="Account Email"
-            variant="outlined"
+            id='outlined-basic'
+            label='Account Email'
+            variant='outlined'
             fullWidth
             onChange={(e) => {
               setEmail(e.target.value);
             }}
           />
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 2: Enter Trusted Contact Email
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
+        <Stack direction='row' textAlign='center' justifyContent='left'>
           <TextField
-            id="outlined-basic"
-            label="Trusted Contact Email"
-            variant="outlined"
+            id='outlined-basic'
+            label='Trusted Contact Email'
+            variant='outlined'
             fullWidth
             onChange={(e) => {
               setTcEmail(e.target.value);
             }}
           />
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 3: Commit
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
+        <Stack direction='row' textAlign='center' justifyContent='left'>
           <Button
-            variant="contained"
-            size="large"
+            variant='contained'
+            size='large'
             fullWidth
             onClick={() => {
               doCommit();
@@ -110,7 +110,7 @@ export default function Home() {
       >
         <Alert
           onClose={() => setErrorToast("")}
-          severity="error"
+          severity='error'
           sx={{ width: "100%" }}
         >
           {errorToast}
@@ -124,7 +124,7 @@ export default function Home() {
       >
         <Alert
           onClose={() => setToast("")}
-          severity="success"
+          severity='success'
           sx={{ width: "100%" }}
         >
           {toast}
@@ -134,7 +134,7 @@ export default function Home() {
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress color='inherit' />
       </Backdrop>
     </main>
   );
