@@ -16,7 +16,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
 ) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
 });
 
 export default function Home() {
@@ -37,12 +37,14 @@ export default function Home() {
       return;
     }
     try {
-      const plaintext = decrypt(backupPassword, ciphertext);
-      console.log(plaintext);
-      setUnlockPassword(decrypt(backupPassword, ciphertext));
-      setValidPlaintext(true);
+      const password = decrypt(backupPassword, ciphertext);
+      if (password) {
+        setUnlockPassword(password);
+        setValidPlaintext(true);
+      }
     } catch (error) {
-      setErrorToast(error as string);
+      console.log("err:", error as string);
+      setErrorToast((error as Error).message);
     }
   };
 
@@ -54,73 +56,66 @@ export default function Home() {
 
   return (
     <main>
-      <Stack marginX="200px" marginTop="50px" spacing={2}>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+      <Stack marginX='200px' marginTop='50px' spacing={2}>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 1: Enter Your Backup Ciphertext
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
+        <Stack direction='row' textAlign='center' justifyContent='left'>
           <TextField
-            id="outlined-basic"
-            label="Backup Ciphertext"
-            variant="outlined"
+            id='outlined-basic'
+            label='Backup Ciphertext'
+            variant='outlined'
             fullWidth
             onChange={(e) => {
               setCiphertext(e.target.value);
             }}
           />
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 2: Enter Your Backup Password
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
+        <Stack direction='row' textAlign='center' justifyContent='left'>
           <TextField
-            id="outlined-basic"
-            label="Backup Password"
-            variant="outlined"
+            id='outlined-basic'
+            label='Backup Password'
+            variant='outlined'
             fullWidth
             onChange={(e) => {
               setBackupPassword(e.target.value);
             }}
           />
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Typography variant="h6" gutterBottom>
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Typography variant='h6' gutterBottom>
             Step 3: Commit
           </Typography>
         </Stack>
-        <Stack direction="row" textAlign="center" justifyContent="left">
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            onClick={() => {
-              doCommit();
-            }}
-          >
+        <Stack direction='row' textAlign='center' justifyContent='left'>
+          <Button variant='contained' size='large' fullWidth onClick={doCommit}>
             Commit
           </Button>
         </Stack>
         {validPlaintext && (
           <>
-            <Stack direction="row" textAlign="center" justifyContent="left">
-              <Typography variant="h6" gutterBottom>
+            <Stack direction='row' textAlign='center' justifyContent='left'>
+              <Typography variant='h6' gutterBottom>
                 Step 5: Results
               </Typography>
             </Stack>
             <Stack
-              direction="row"
-              textAlign="center"
-              justifyContent="left"
+              direction='row'
+              textAlign='center'
+              justifyContent='left'
               sx={{ marginBottom: 50 }}
             >
               <TextField
-                id="outlined-basic"
-                label="Password"
-                variant="outlined"
+                id='outlined-basic'
+                label='Password'
+                variant='outlined'
                 fullWidth
                 multiline
                 rows={2}
@@ -128,8 +123,8 @@ export default function Home() {
                 disabled
               />
               <Button
-                variant="contained"
-                size="large"
+                variant='contained'
+                size='large'
                 sx={{ marginLeft: "20px" }}
                 onClick={() => {
                   copyToClipboard(unlockPassword);
@@ -149,7 +144,7 @@ export default function Home() {
       >
         <Alert
           onClose={() => setErrorToast("")}
-          severity="error"
+          severity='error'
           sx={{ width: "100%" }}
         >
           {errorToast}
@@ -163,7 +158,7 @@ export default function Home() {
       >
         <Alert
           onClose={() => setToast("")}
-          severity="success"
+          severity='success'
           sx={{ width: "100%" }}
         >
           {toast}
@@ -173,7 +168,7 @@ export default function Home() {
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress color='inherit' />
       </Backdrop>
     </main>
   );
