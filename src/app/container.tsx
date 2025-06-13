@@ -24,6 +24,7 @@ const LINKS = [
     href: "/tcBackupCiphertext",
   },
   { text: "TC Decrypt", href: "/tcDecrypt" },
+  { text: "Reject Family Retrieve", href: "/rejectFamilyRetrieve" },
 ];
 
 function Container({ children }: { children: React.ReactNode }) {
@@ -65,7 +66,7 @@ function Container({ children }: { children: React.ReactNode }) {
     props,
     ref
   ) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+    return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
   });
 
   const matches = useMediaQuery("(min-width:600px)");
@@ -103,7 +104,7 @@ function Container({ children }: { children: React.ReactNode }) {
       >
         <Alert
           onClose={() => setErrorToast("")}
-          severity="error"
+          severity='error'
           sx={{ width: "100%" }}
         >
           {errorToast}
