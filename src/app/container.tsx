@@ -24,7 +24,8 @@ const LINKS = [
     href: "/tcBackupCiphertext",
   },
   { text: "TC Decrypt", href: "/tcDecrypt" },
-  { text: "Reject Family Retrieve", href: "/rejectFamilyRetrieve" },
+  { text: "Reject Family Recover", href: "/rejectFamilyRecover" },
+  { text: "Confirm Family Recover", href: "/confirmFamilyRecover" },
 ];
 
 function Container({ children }: { children: React.ReactNode }) {

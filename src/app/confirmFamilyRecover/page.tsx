@@ -2,14 +2,11 @@
 import React from "react";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import { decrypt, post } from "../util";
+import { post } from "../util";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
-import * as clipboard from "clipboard-polyfill";
 import { useSearchParams } from "next/navigation";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -27,29 +24,29 @@ export default function Home() {
   const [result, setResult] = React.useState("");
 
   React.useEffect(() => {
-    const retrieveUUID = searchParams.get("uuid");
-    if (retrieveUUID) {
+    const recoverUUID = searchParams.get("uuid");
+    if (recoverUUID) {
       post(
         false,
         "",
-        "/pswds/rejectFamilyRetrieve/v1",
+        "/pswds/confirmFamilyRecover/v1",
         setLoading,
         true,
         {
-          uuid: retrieveUUID,
+          uuid: recoverUUID,
         },
         (respData: any) => {
           if (respData.code === 0) {
-            setResult("Reject Successfully!");
+            setResult("Confirm Successfully!");
           } else {
-            setResult("Reject Unsuccessfully!");
+            setResult("Confirm Unsuccessfully!");
           }
         },
         setToast,
         setErrorToast
       );
     } else {
-      setResult("None Retrieve UUID");
+      setResult("None Recover UUID");
     }
   }, [searchParams]);
 
