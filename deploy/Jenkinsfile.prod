@@ -7,7 +7,7 @@ pipeline {
             steps {
                 sh """
                     docker build \
-                        --build-arg env=test \
+                        --build-arg env=production \
                         -t nextsurfer/pswds-helper:latest \
                         -f ./Dockerfile .
                     docker stop pswds-helper && docker rm pswds-helper || echo 0
