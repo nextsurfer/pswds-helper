@@ -1,0 +1,43 @@
+pipeline {
+    agent {
+        label 's1'
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh """
+                    docker build \
+                        --build-arg env=production \
+                        -t nextsurfer/pswds-helper:latest \
+                        -f ./Dockerfile .
+                    docker stop pswds-helper && docker rm pswds-helper || echo 0
+                    docker run -d \
+                        --restart always \
+                        --name pswds-helper \
+                        --dns ${HOST_IP} \
+                        --dns 8.8.8.8 \
+                        -p ${PSWDS_HELPER_PORT}:3000 \
+                        nextsurfer/pswds-helper:latest
+                """
+            }
+        }
+    }
+     post {
+        success {
+            sh """
+                echo 'deploy success'
+            """
+        }
+        failure {
+             sh """
+                echo 'deploy failure'
+            """
+        }
+        cleanup {
+            sh """
+                docker system prune -f
+            """
+            cleanWs()
+        }
+    }
+}
