@@ -18,6 +18,7 @@ import MuiAlert, { AlertProps } from "@mui/material/Alert";
 
 const LINKS = [
   { text: "Home", href: "/" },
+  { text: "QRcode Transfer", href: "/qrcodeTransfer" },
   { text: "Decrypt", href: "/decrypt" },
   {
     text: "TC Backup Ciphertext",

@@ -8,11 +8,7 @@ import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import Backdrop from "@mui/material/Backdrop";
 import { TransitionProps } from "@mui/material/transitions";
 import Slide from "@mui/material/Slide";
-import {
-  post,
-  aes256GCM_secp256k1Decrypt,
-  decryptByXchacha20poly1305,
-} from "@/app/util";
+import { post, aes256GCM_secp256k1Decrypt } from "@/app/util";
 import * as secp from "@noble/secp256k1";
 import QRCode from "qrcode";
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -20,9 +16,6 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import * as clipboard from "clipboard-polyfill";
 import Typography from "@mui/material/Typography";
-import QrScanner from "qr-scanner";
-import { AnimatedQRCodeDecoder } from "@doomjs/animated-qrcode";
-import { keccak_256 } from "@noble/hashes/sha3";
 
 interface Password {
   id: string;
@@ -121,82 +114,91 @@ export default function Page() {
   const [record, setRecord] = React.useState<any>(null);
   const [others, setOthers] = React.useState<null | OtherField[]>(null);
   const [isPassword, setIsPassword] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
-  const [pinCode, setPinCode] = React.useState("");
-  const [encryptedData, setEncryptedData] = React.useState("");
-  const scanQR = () => {
-    let decoder = new AnimatedQRCodeDecoder();
-    const videoElem: HTMLElement | null = document.getElementById("video");
-    if (videoElem) {
-      const qrScanner = new QrScanner(
-        videoElem as HTMLVideoElement,
-        (result) => {
-          try {
-            decoder.receivePart(result.data);
-            let curProgress = decoder.getProgress();
-            if (progress > curProgress) {
-              curProgress = progress;
-            }
-            setProgress(curProgress);
-            if (decoder.finished) {
-              const objString = decoder.result!.toString();
-              if (objString) {
-                let obj = JSON.parse(objString);
-                if (obj.pin) {
-                  setEncryptedData(obj.data);
-                } else {
-                  const data = JSON.parse(obj.data);
-                  setRecord(data);
-                  if (!data.recordType) {
-                    setIsPassword(true);
-                  } else {
-                    setIsPassword(false);
-                  }
-                  if (data.others) {
-                    let others = JSON.parse(data.others);
-                    setOthers(others);
+  const generateQR = () => {
+    // 1. fetch uuid from backend
+    post(
+      false,
+      "",
+      "/pswds/getAirdropID/v1",
+      setLoading,
+      true,
+      undefined,
+      (respData: any) => {
+        if (respData.data) {
+          if (respData.data.uuid !== "") {
+            setUuid(respData.data.uuid);
+            // 2. generate ECIES keys
+            const _privKey = secp.utils.randomPrivateKey();
+            setPrivKey(_privKey);
+            const pubKey = secp.getPublicKey(_privKey, false);
+            const pubKeyHex = Buffer.from(pubKey).toString("hex");
+            // 3. generate QR
+            const canvas = document.getElementById("canvas");
+            QRCode.toCanvas(
+              canvas,
+              JSON.stringify({
+                uuid: respData.data.uuid,
+                publicKey: pubKeyHex,
+              }),
+              (error) => {
+                if (error) setErrorToast(error.message);
+              }
+            );
+            // 4-1. request password
+            const timer = setInterval(async () => {
+              const result = await post(
+                false,
+                "",
+                "/pswds/requestAirdropData/v1",
+                setLoading,
+                true,
+                { uuid: respData.data.uuid }
+              );
+              if (result.code !== 0) {
+                clearInterval(timer);
+                setErrorToast(result.message);
+                return;
+              }
+              if (result.data) {
+                if (result.data.cipherText) {
+                  clearInterval(timer);
+                  // 4-2. decrypt the cipher text
+                  const ciphertext = Buffer.from(result.data.cipherText, "hex");
+                  const plaintext = Buffer.from(
+                    aes256GCM_secp256k1Decrypt(
+                      _privKey,
+                      new Uint8Array(
+                        ciphertext.buffer,
+                        ciphertext.byteOffset,
+                        ciphertext.length
+                      )
+                    )
+                  ).toString("utf-8");
+                  if (plaintext) {
+                    let one = JSON.parse(plaintext);
+                    setRecord(one);
+                    if (!one.recordType) {
+                      setIsPassword(true);
+                    } else {
+                      setIsPassword(false);
+                    }
+                    if (one.others) {
+                      let others = JSON.parse(one.others);
+                      setOthers(others);
+                    }
                   }
                 }
               }
-              qrScanner.destroy();
-              setProgress(0);
-            }
-          } catch (error) {
-            decoder = new AnimatedQRCodeDecoder(); // the lib has bug, so do catch
+            }, 5000);
           }
-        },
-        {
-          /* your options or returnDetailedScanResult: true if you're not specifying any other options */
         }
-      );
-      qrScanner.start();
-    }
+      },
+      setToast,
+      setErrorToast
+    );
   };
   const copyToClipboard = (text: string) => {
     clipboard.writeText(text);
-  };
-  const validatePinCode = () => {
-    try {
-      const dataString = decryptByXchacha20poly1305(
-        keccak_256(pinCode),
-        encryptedData
-      );
-      const data = JSON.parse(dataString);
-      setRecord(data);
-      if (!data.recordType) {
-        setIsPassword(true);
-      } else {
-        setIsPassword(false);
-      }
-      if (data.others) {
-        let others = JSON.parse(data.others);
-        setOthers(others);
-      }
-      setEncryptedData("");
-      setPinCode("");
-    } catch (error) {
-      setErrorToast("invalid pin code, please input again.");
-    }
   };
 
   return (
@@ -209,38 +211,18 @@ export default function Page() {
       }}
     >
       <Button
-        disabled={encryptedData !== ""}
         size='large'
         variant='contained'
         onClick={() => {
-          setTimeout(() => {
-            setRecord(null);
-            setOthers(null);
-          });
-          scanQR();
+          setRecord(null);
+          generateQR();
         }}
       >
-        Open Camera
+        Generate
       </Button>
-      {encryptedData && (
-        <Stack spacing={2} alignItems='center' direction='row'>
-          <FormControl sx={{ m: 1, width: 500 }} variant='outlined'>
-            <InputLabel htmlFor='outlined-adornment-title'>Pin Code</InputLabel>
-            <OutlinedInput
-              id='outlined-adornment-title'
-              value={pinCode}
-              label={"Pin Code"}
-              placeholder='Please input pin code'
-              onChange={(e) => {
-                setPinCode(e.target.value);
-              }}
-            />
-          </FormControl>
-          <Button size='large' variant='contained' onClick={validatePinCode}>
-            Ok
-          </Button>
-        </Stack>
-      )}
+      <Stack spacing={2} alignItems='center' direction='row'>
+        <canvas id='canvas'></canvas>
+      </Stack>
       {record && (
         <>
           {isPassword && (
@@ -1184,14 +1166,6 @@ export default function Page() {
             ))}
         </>
       )}
-      {!record && !encryptedData && (
-        <Stack spacing={1} direction='row'>
-          <Typography variant='h6'>Progress: {progress * 100}%</Typography>
-        </Stack>
-      )}
-      <Stack spacing={1} direction='row'>
-        <video id='video' style={{ width: 800, height: 800 }}></video>
-      </Stack>
       <Snackbar
         open={errorToast !== ""}
         autoHideDuration={5000}
